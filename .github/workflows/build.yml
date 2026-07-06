@@ -10,9 +10,6 @@ jobs:
     steps:
     - uses: actions/checkout@v6
 
-    - name: configure
-      run: ./configure
-
     - name: Install dependencies
       run: |
           sudo apt-get update
