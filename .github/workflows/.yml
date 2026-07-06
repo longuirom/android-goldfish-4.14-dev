@@ -1,0 +1,38 @@
+name: Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: configure
+      run: ./configure
+
+    - name: Install dependencies
+      run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            bison flex libssl-dev python3 python-is-python3 \
+            libarchive-tools zstd make unzip zip
+
+    - name: Install toolchain
+      run: |
+          git clone https://github.com/longuirom/x86_64-linux-android-4.9 --depth 1
+          export PATH=$GITHUB_WORKSPACE/x86_64-linux-android-4.9/bin:$PATH
+          echo "$GITHUB_WORKSPACE/x86_64-linux-android-4.9/bin" >> $GITHUB_PATH
+
+    - name: Build
+      run: |
+          make ARCH=x86_64 x86_64_ranchu_defconfig
+          make -j16 ARCH=x86_64 CROSS_COMPILE=x86_64-linux-android-
+
+    - name: Upload Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: bzImage
+          path: arch/x86_64/boot/bzImage
